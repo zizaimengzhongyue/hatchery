@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/zizaimengzhongyue/serverr-manager/types"
+	"github.com/zizaimengzhongyue/hatchery/types"
 )
 
 func Register(name, host string, port int) {
