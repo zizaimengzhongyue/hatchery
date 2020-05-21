@@ -1,4 +1,4 @@
-module github.com/zizaimengzhongyue/server-manager
+module github.com/zizaimengzhongyue/hatchery
 
 go 1.13
 
