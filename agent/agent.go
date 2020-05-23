@@ -17,9 +17,8 @@ func Register(name, host string, port int) {
 	}
 	client := &http.Client{}
 	body, _ := json.Marshal(service)
-	req, _ := http.NewRequest("POST", "http://127.0.0.1:8001", nil)
+	req, _ := http.NewRequest("POST", "http://127.0.0.1:8001", bytes.NewReader(body))
 	req.Header.Add("Content-Type", "application/json")
-	req.Body = bytes.NewReader(body)
 	_, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)

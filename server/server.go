@@ -68,3 +68,15 @@ func MultiGet(res http.ResponseWriter, req *http.Request) {
 	res.Header().Add("Content-Type", "application/json")
 	res.Write(bts)
 }
+
+func Init() {
+	http.HandleFunc("/register", Register)
+	http.HandleFunc("/cancel", Cancel)
+	http.HandleFunc("/get", Get)
+	http.HandleFunc("/multiGet", MultiGet)
+
+	err := http.ListenAndServe(":8001", nil)
+	if err != nil {
+		panic(err)
+	}
+}
