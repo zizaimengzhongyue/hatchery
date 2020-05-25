@@ -3,13 +3,12 @@ package agent
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/zizaimengzhongyue/hatchery/types"
 )
 
-func Register(name, host string, port int) {
+func Register(name, host string, port int) error {
 	service := types.Service{
 		Name: name,
 		Host: host,
@@ -21,6 +20,7 @@ func Register(name, host string, port int) {
 	req.Header.Add("Content-Type", "application/json")
 	_, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
+	return nil
 }
