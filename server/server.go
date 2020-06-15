@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 
@@ -28,6 +29,7 @@ func CreateID() string {
 
 func Register(res http.ResponseWriter, req *http.Request) {
 	bts, _ := ioutil.ReadAll(req.Body)
+	log.Println(string(bts))
 	service := &types.Service{}
 	_ = json.Unmarshal(bts, service)
 	service.ID = CreateID()
