@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 
 	uuid "github.com/satori/go.uuid"
+	"github.com/zizaimengzhongyue/hatchery/logging"
 	"github.com/zizaimengzhongyue/hatchery/types"
 )
 
@@ -29,7 +29,7 @@ func CreateID() string {
 
 func Register(res http.ResponseWriter, req *http.Request) {
 	bts, _ := ioutil.ReadAll(req.Body)
-	log.Println(string(bts))
+	logging.Get("hatchery").Println(string(bts))
 	service := &types.Service{}
 	_ = json.Unmarshal(bts, service)
 	service.ID = CreateID()
