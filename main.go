@@ -9,12 +9,12 @@ import (
 
 func init() {
 	cur, _ := os.Getwd()
-	access, err := os.OpenFile(cur+"/log/access.log", os.O_RDONLY|os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	access, err := os.OpenFile(cur+"/log/access.log", os.O_RDONLY|os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
 		panic(err)
 	}
 	logging.New("access", access, "nginx")
-	hatchery, err := os.OpenFile(cur+"/log/hatchery.log", os.O_RDONLY|os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	hatchery, err := os.OpenFile(cur+"/log/hatchery.log", os.O_RDONLY|os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
 		panic(err)
 	}
