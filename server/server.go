@@ -27,14 +27,28 @@ func CreateID() string {
 	return uuid.NewV4().String()
 }
 
+func isRegistered(serv *types.Service) bool {
+	for _, v := range services[serv.Name] {
+		if v.Host == serv.Host && v.Port == serv.Port {
+			return true
+		}
+	}
+	return false
+}
+
 func Register(res http.ResponseWriter, req *http.Request) {
 	bts, _ := ioutil.ReadAll(req.Body)
 	logging.Get("hatchery").Println(string(bts))
 	service := &types.Service{}
 	_ = json.Unmarshal(bts, service)
+	if isRegistered(service) {
+		bts, _ = json.Marshal(types.Response{Status: 1, Msg: "ok", Data: "have registered"})
+		goto res
+	}
 	service.ID = CreateID()
 	services[service.Name] = append(services[service.Name], *service)
 	bts, _ = json.Marshal(types.Response{Status: 0, Msg: "ok", Data: *service})
+res:
 	res.Header().Add("Content-Type", "application/json")
 	res.Write(bts)
 }

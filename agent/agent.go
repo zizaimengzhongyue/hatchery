@@ -3,6 +3,7 @@ package agent
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -12,8 +13,9 @@ import (
 	"github.com/zizaimengzhongyue/hatchery/types"
 )
 
-var cfg types.Config = &types.Config{}
-var servers map[string][]types.Server = map[string][]types.Server{}
+var cfg types.Config = types.Config{}
+var remoterMultiResponse types.RemoterMultiResponse = types.RemoterMultiResponse{}
+var servers map[string][]types.Service = map[string][]types.Service{}
 
 func Register(name, host string, port int) error {
 	service := types.Service{
@@ -36,8 +38,10 @@ func Register(name, host string, port int) error {
 }
 
 func Sync(names []string) error {
-	params = strings.join(names, ",")
-	url := "http://127.0.0.1:8001/get?names=" + params
+	remoterRes := &types.RemoterMultiResponse{}
+	params := strings.Join(names, ",")
+	url := "http://127.0.0.1:8001/multiGet?names=" + params
+	log.Println(url)
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", url, nil)
 	resp, err := client.Do(req)
@@ -45,15 +49,18 @@ func Sync(names []string) error {
 		return err
 	}
 	defer resp.Body.Close()
-	body, _ = ioutil.ReadAll(resp.Body)
+	body, _ := ioutil.ReadAll(resp.Body)
 	log.Println(string(body))
-	err := json.Unmarshal(body, servers)
+	err = json.Unmarshal(body, remoterRes)
 	if err != nil {
-		return nil
+		return err
 	}
+	servers = remoterRes.Data
+	return nil
 }
 
 func Init(names []string) error {
+	return nil
 }
 
 func InitWithFile(path string) error {
@@ -61,19 +68,24 @@ func InitWithFile(path string) error {
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(bts, cfg)
+	err = json.Unmarshal(bts, &cfg.Names)
 	if err != nil {
 		return err
 	}
-    ticker := time.NewTicker(60 * time.Second)
+	err = Sync(cfg.Names)
+	if err != nil {
+		fmt.Println(err)
+	}
+    fmt.Println(servers)
+	ticker := time.NewTicker(10 * time.Second)
 	go func() {
 		for {
-			select {
-            case t := <-ticker.C:
-				if err = Sync(cfg.names); err != nil {
-					return err
-				}
+			_ = <-ticker.C
+			err = Sync(cfg.Names)
+			if err != nil {
+				fmt.Println(err)
 			}
+			fmt.Println(servers)
 		}
 	}()
 	return nil

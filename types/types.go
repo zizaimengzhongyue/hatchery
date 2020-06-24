@@ -13,6 +13,12 @@ type Response struct {
 	Data   interface{} `json:"data"`
 }
 
+type RemoterMultiResponse struct {
+	Status int                  `json:"stauts"`
+	Msg    string               `json:"msg"`
+	Data   map[string][]Service `json:"data"`
+}
+
 type Config struct {
 	Host  string
 	Port  int
