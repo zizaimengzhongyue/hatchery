@@ -3,9 +3,11 @@ package agent
 import (
 	"bytes"
 	"encoding/json"
+    "errors"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -15,7 +17,11 @@ import (
 
 var cfg types.Config = types.Config{}
 var remoterMultiResponse types.RemoterMultiResponse = types.RemoterMultiResponse{}
-var servers map[string][]types.Service = map[string][]types.Service{}
+var services map[string][]types.Service = map[string][]types.Service{}
+
+const (
+	URL = "http://%s:%d%s"
+)
 
 func Register(name, host string, port int) error {
 	service := types.Service{
@@ -55,11 +61,7 @@ func Sync(names []string) error {
 	if err != nil {
 		return err
 	}
-	servers = remoterRes.Data
-	return nil
-}
-
-func Init(names []string) error {
+	services = remoterRes.Data
 	return nil
 }
 
@@ -76,7 +78,7 @@ func InitWithFile(path string) error {
 	if err != nil {
 		fmt.Println(err)
 	}
-    fmt.Println(servers)
+	fmt.Println(services)
 	ticker := time.NewTicker(10 * time.Second)
 	go func() {
 		for {
@@ -85,12 +87,40 @@ func InitWithFile(path string) error {
 			if err != nil {
 				fmt.Println(err)
 			}
-			fmt.Println(servers)
+			fmt.Println(services)
 		}
 	}()
 	return nil
 }
 
-func DoRequest(name string, data interface{}, res interface{}) error {
-	return nil
+func DoRequest(name, method, path string, request interface{}, res interface{}) error {
+	service, err := getService(name)
+    if err != nil {
+        return err
+    }
+	client := &http.Client{}
+	url := fmt.Sprintf(URL, service.Host, service.Port, path)
+	body, _ := json.Marshal(request)
+	req, err := http.NewRequest(method, url, bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	body, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(body, res)
+}
+
+func getService(name string) (types.Service, error) {
+	servs, ok := services[name]
+	if !ok {
+		return types.Service{}, errors.New("undefined service")
+	}
+	return servs[rand.Int31n(int32(len(servs)))], nil
 }
